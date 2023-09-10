@@ -1,0 +1,267 @@
+# Load the lpSolve library
+
+library(lpSolve)
+
+###Problem 1
+
+Back Savers is a company that produces backpacks primarily for students. They are considering offering some combination of two different models—the Collegiate and the Mini. Both are made out of the same rip-resistant nylon fabric. Back Savers has a long-term contract with a supplier of the nylon and receives a 5000 square-foot shipment of the material each week. Each Collegiate requires 3 square feet while each Mini requires 2 square feet. The sales forecasts indicate that at most 1000 Collegiates and 1200 Minis can be sold per week. Each Collegiate requires 45 minutes of labor to produce and generates a unit profit of $32. Each Mini requires 40 minutes of labor and generates a unit profit of $24. Back Savers has 35 laborers that each provides 40 hours of labor per week. Management wishes to know what quantity of each type of backpack to produce per week.
+
+Decision Variables:
+
+Let G be the number of Collegiate backpacks to produce per week, and let I be the number of Mini backpacks to produce per week.
+
+Objective Function:
+
+The objective is to maximize the total profit, which can be calculated as the sum of the profits from producing Collegiate and Mini backpacks:
+
+                     MaximizeZ = 32G + 24I
+            
+Constraints:
+
+1.Material Constraint:
+
+The total square footage of nylon used for Collegiate and Mini backpacks cannot exceed the available 5000 square feet of nylon:
+             3G + 2I ≤ 5000
+             
+2.Sales Forecast Constraints:
+
+The number of Collegiate backpacks produced cannot exceed 1000:
+              G ≤ 1000
+The number of Mini backpacks produced cannot exceed 1200:
+               I ≤ 1200
+               
+3.Labor Constraint:
+
+The total labor hours used for Collegiate and Mini backpacks can't exceed the available labor hours provided by 35 laborers, each working 40 hours per week:
+
+            45G + 40I ≤ 35 × 40 × 60(minutesconvertedtohours)
+            
+4.Non-Negativity Constraints:
+
+The number of Collegiate and Mini backpacks produced must be non-negative:
+                        G ≥ 0, I ≥ 0
+                        
+##LP solver to find the optimal values of G and I that maximize the profit while satisfying these constraints.
+
+# Load the lpSolve library
+library(lpSolve)
+
+# Define the objective function coefficients
+objective_coefficients <- c(32, 24)
+
+# Constraint coefficients
+const_mat <- matrix(c(3, 2, # nylon fabric
+                      45, 40, # labor hours
+                       1, 0, # x demand
+                       0, 1), # y demand
+                       nrow = 4, byrow = TRUE)
+                       
+# Define the right-hand side values of the constraints
+rhs_values <- c(5000, 1000, 1200, 35 * 40 * 60)
+
+# Define the signs of the constraints
+constraint_signs <- rep("<=", 4)
+
+# Constraint directions
+dir <- c("<=", "<=", "<=", "<=")
+
+# Solve the linear programming problem
+lp_result <- lp("max", objective_coefficients, const_mat, constraint_signs,
+rhs_values)
+
+# Display the optimal solution
+optimal_solution <- lp_result$solution
+print(optimal_solution)
+
+## [1] 22.22222 0.00000
+
+# Display the maximum profit
+max_profit <- lp_result$objval
+print(paste("Maximum Profit: $", max_profit))
+
+## [1] "Maximum Profit: $ 711.111111111111"
+1.Objective Function (Profit Coefficients):
+Represents the profit coefficients for Collegiate backpacks (x) at $32 each and Mini backpacks (y) at $24 each.
+
+2.Constraint Coefficients Matrix (Rows):
+
+Row 1: Indicates nylon fabric usage per backpack (3 for Collegiate, 2 for Mini). Row 2:Reflects labor hours per backpack (45 for Collegiate, 40 for Mini). Row 3: Enforces a constraint on the maximum Collegiate demand. Row 4:Enforces a constraint on the maximum Mini demand.
+
+3.RHS Values (Right-Hand Side):
+
+5000: Represents the maximum available nylon fabric. 1400: Signifies the maximum labor hours available. 1000: Indicates the maximum demand for Collegiate backpacks. 1200:Represents the maximum demand for Mini backpacks.
+
+4.Constraint Directions:
+
+All constraints are set to “<=” because they represent limits that can be satisfied but not exceeded.
+
+5.Solving the Model:
+
+Solving the linear programming model provides the optimal production quantities of Collegiate and Mini backpacks to maximize profit while adhering to the specified constraints.
+
+###Problem 2
+
+The Weigelt Corporation has three branch plants with excess production capacity.Fortunately, the corporation has a new product ready to begin production, and all three plants have this capability, so some of the excess capacity can be used in this way. This product can be made in three sizes–large, medium, and small–that yield a net unit profit of $420, $360, and $300, respectively. Plants 1, 2, and 3 have the excess capacity to produce
+750, 900, and 450 units per day of this product, respectively, regardless of the size or combination of sizes involved.
+
+The amount of available in-process storage space also imposes a limitation on the production rates of the new product. Plants 1, 2, and 3 have 13,000, 12,000, and 5,000 square feet, respectively, of in-process storage space available for a day’s production of this product. Each unit of the large, medium, and small sizes produced per day requires 20, 15, and 12 square feet, respectively. Sales forecasts indicate that if available, 900, 1,200, and
+750 units of the large, medium, and small sizes, respectively, would be sold per day.
+
+At each plant, some employees will need to be laid off unless most of the plant’s excess production capacity can be used to produce the new product. To avoid layoffs if possible, management has decided that the plants should use the same percentage of their excess capacity to produce the new product. Management wishes to know how much of each of the sizes should be produced by each of the plants to maximize profit.
+
+a. Define the decision variables
+
+The decision variables are the number of units of the new product, regardless its size, that should be produced on each plant to maximize the company’s profit.
+
+Note:
+
+P𝑖 = means the number of units produced on each plant, where 𝑖= 1 (Plant 1), 2 (Plant 2), and 3 (Plant 3).
+
+L, M, and S = means the product’s size, where L = large, M = medium, and S = small.
+
+##The decision variables are as follows
+
+𝑃𝑖𝐿 = number of large items produced on plant 𝑖, where 𝑖= 1 (Plant 1), 2 (Plant 2), and 3 (Plant 3).
+
+𝑃𝑖𝑀 = number of medium items produced on plant 𝑖, where 𝑖= 1 (Plant 1), 2 (Plant 2), and 3 (Plant 3).
+
+𝑃𝑖𝑆 = number of small items produced on plant 𝑖, where 𝑖= 1 (Plant 1), 2 (Plant 2), and 3 (Plant 3).
+
+   b. Formulate a linear programming model for this problem.
+   
+𝑃𝑖𝐿 = number of large items produced on plant 𝑖, where 𝑖= 1 (Plant 1), 2 (Plant 2), and 3 (Plant 3).
+
+𝑃𝑖𝑀 = number of medium items produced on plant 𝑖, where 𝑖= 1 (Plant 1), 2 (Plant 2), and 3 (Plant 3).
+
+𝑃𝑖𝑆 = number of small items produced on on plant 𝑖, where 𝑖= 1 (Plant 1), 2 (Plant 2), and 3 (Plant 3).
+
+##Maximize Profit
+
+𝑍 = 420 (𝑃1𝐿 + 𝑃2𝐿 + 𝑃3𝐿) + 360 (𝑃1𝑀 + 𝑃2𝑀 + 𝑃3𝑀) + 300 (𝑃1𝑆 + 𝑃2𝑆 + 𝑃3𝑆)
+##Constraints: Total number of size’s units produced regardless the plant: 𝐿 = 𝑃1𝐿 + 𝑃2𝐿 + 𝑃3𝐿
+
+         𝑀 = 𝑃1𝑀 + 𝑃2𝑀 + 𝑃3𝑀
+         𝑆 = 𝑃1𝑆 + 𝑃2𝑆 + 𝑃3𝑆
+         
+##Production capacity per unit by plant each day:
+
+Plant 1 = 𝑃1𝐿 + 𝑃1𝑀 + 𝑃1𝑆 750
+Plant 2 = 𝑃2𝐿 + 𝑃2𝑀 + 𝑃2𝑆 900
+Plant 3 = 𝑃3𝐿 + 𝑃3𝑀 + 𝑃3𝑆 450
+
+##Storage capacity per unit by plant each day:
+
+Plant 1 = 20𝑃1𝐿 + 15𝑃1𝑀 + 12𝑃1𝑆 13000
+Plant 2 = 20𝑃2𝐿 + 15𝑃2𝑀 + 12𝑃2𝑆 12000
+Plant 3 = 20𝑃3𝐿 + 15𝑃3𝑀 + 12𝑃3𝑆 5000
+
+##Sales forecast per day:
+
+           𝐿 = 𝑃1𝐿 + 𝑃2𝐿 + 𝑃3𝐿 900
+           𝑀 = 𝑃1𝑀 + 𝑃2𝑀 + 𝑃3𝑀 1200
+           𝑆 = 𝑃1𝑆 + 𝑃2𝑆 + 𝑃3𝑆 750
+           
+##The plants should use the same percentage of their excess capacity to produce the new product.
+         (𝑃1𝐿 + 𝑃1𝑀 + 𝑃1𝑆)/750 = (𝑃2𝐿+𝑃2𝑀+𝑃2𝑆)/900 =       (𝑃3𝐿+𝑃3𝑀+𝑃3𝑆)/450
+
+It can be simplified as:
+
+ a) $900 (P_1L + P_1M + P_1S) - 750 (P_2L + P_2M + P_2S) = 0$
+ b) $450 (P_2L + P_2M + P_2S) - 900 (P_3L + P_3M + P_3S) = 0$
+ c) $450 (P_1L + P_1M + P_1S) - 750 (P_3L + P_3M + P_3S) = 0$
+
+###All values must be greater or equal to zero
+
+𝐿, 𝑀, and 𝑆 ≥ 0
+𝑃𝑖𝐿, 𝑃𝑖𝑀, and 𝑃𝑖𝑆 ≥ 0
+
+
+Code in R
+
+install.packages('lpSolve', repos='http://cran.rstudio.com')
+## Warning: package 'lpSolve' is in use and will not be installed
+library(lpSolve)
+object_func <- c(420, 420, 420,
+                 360, 360, 360,
+                 300, 300, 300)
+                 
+left_const <- matrix(c(1, 1, 1, 0, 0, 0, 0, 0, 0,
+                      0, 0, 0, 1, 1, 1, 0 ,0, 0,
+                      0, 0, 0, 0, 0, 0, 1, 1, 1,
+                      20, 15, 12, 0, 0, 0, 0, 0, 0,
+                      0, 0, 0, 20, 15, 12, 0, 0, 0,
+                      0, 0, 0, 0, 0, 0, 20, 15, 12,
+                      1, 0, 0, 1, 0, 0, 1, 0, 0,
+                      0, 1, 0, 0, 1, 0, 0, 1, 0,
+                      0, 0, 1, 0, 0, 1, 0, 0, 1,
+                      900, 900, 900, -750, -750, -750, 0, 0, 0,
+                      0, 0, 0, 450, 450, 450, -900, -900, -900,
+                      450, 450, 450, 0, 0, 0, -750, -750, -750), nrow = 12,
+byrow = TRUE)
+
+right_const <- c(750,
+ 900,
+ 450,
+ 13000,
+ 12000,
+ 5000,
+ 900,
+ 1200,
+ 750,
+ 0,
+ 0,
+ 0)
+signs <- c("<=",
+           "<=",
+           "<=",
+           "<=",
+           "<=",
+           "<=",
+           "<=",
+           "<=",
+           "<=",
+           "=",
+           "=",
+           "=")
+           
+lp("max",object_func,left_const,signs,right_const)
+
+## Success: the objective function is 716666.7
+
+lp("max",object_func,left_const,signs,right_const )$solution
+
+## [1] 0.0000 694.4444 0.0000 0.0000 500.0000 333.3333 0.0000
+0.0000
+## [9] 416.6667
+
+1.Decision Variables in LP:
+
+This concept is represented indirectly in the code by defining the objective function object_func with coefficients for different variables. In this case, the variables are related to plant and product combinations.
+
+2.Objective Function:
+
+The objective function is explicitly defined in the code as object_func. It represents the coefficients for the profit-maximizing equation.
+
+3.Constraints as Linear Relationships:
+
+The constraints are represented in the code as the left_const matrix, which encodes the linear relationships between decision variables, coefficients, and constants.
+
+4.Non-Negativity Constraints:
+
+The non-negativity constraints are not explicitly represented in this code but are typically implied when working with LP problems. Decision variables are assumed to be nonnegative by default.
+
+5.Formulating LP:
+
+The code follows the formulation process by defining the objective function, constraints matrix, and constraint directions (signs) to set up the LP problem.
+
+6.Objective Function in Production Planning:
+
+In the code, the objective function calculates total profit by multiplying decision variables (quantities) with their respective profit coefficients.
+
+7.Constraints in Production Planning:
+
+The code defines constraints related to production capacity, storage capacity, supply, demand, and utilization of capacity.
+
+8.Full LP Model:
+
+The code as a whole represents a complete LP model, including the objective function, constraints, and constraint directions. It can be solved to find the optimal values of decision variables that maximize profit while satisfying constraints.
