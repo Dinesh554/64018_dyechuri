@@ -1,0 +1,198 @@
+---
+title: "QMM_Assignment-3_811295667"
+author: "Dinesh Yechuri"
+date: "2023-10-15"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Question:
+Heart Start produces automated external defibrillators (AEDs) in each of three different plants (A, B and C). The unit production costs and monthly production capacity of the two plants are indicated in the table below. The AEDs are sold through three wholesalers. The shipping cost from each plant to the warehouse of each wholesaler along with the monthly demand from each wholesaler are also indicated in the table. How many AEDs should be produced in each plant,and how should they be distributed to each of the three wholesaler warehouses so as to minimize the combined cost of production and shipping?
+
+Given problem can be represented using following table:
+```{r}
+library(dplyr)
+library(kableExtra)
+```
+
+```{r}
+df=data.frame(Warehouse_1 = c("$20","$12","$10",80),
+              Warehouse_2= c("$14","$15","$12",90),
+              Warehouse_3= c("$25","$14","$15",70),
+              Dummy_warehouse=c("0","0","0","135"),
+              Unit_production_cost=c("$400","$300","$500"," "),
+              Monthly_production_capacity=c(100,125,150," "))
+rownames(df)=c("Plant A","Plant B","Plant C","Monthly demand")
+df %>% 
+kable() %>% 
+  kable_classic() %>% 
+  column_spec(1,border_right = TRUE) %>% 
+  column_spec(5,border_right = TRUE) %>% 
+  row_spec(3,extra_css = "border-bottom:dotted") %>% 
+  add_header_above(header=c(" "=1,"Unit Shipping Cost"=4," "=2))
+```
+
+
+
+In this transportation problem, demand quantity was 240 and supply quantity was 375. This makes the problem unbalanced and in order to balance it, we have made a separate column as Dummy warehouse with 135 dummy demand. This makes demand = supply ,i.e, a balanced problem. It’s important to balance a problem so that we can solve it efffectively using R.
+
+#Q-1: Formulate and solve this transportation problem using R
+Let us assume,
+The number of AEDs produced by plant-A different warehouses as (Decision Variables) :
+
+$$Warehouse-1: x_{11}$$
+\[Warehouse-2: x_{12}\] \[Warehouse-3: x_{13}\] \[Dummy\hspace{0.2cm}Warehouse: x_{14}\]$$
+The number of AEDs produced by plant-B different warehouses as :
+
+\[Warehouse-1: x_{21}\] \[Warehouse-2: x_{22}\] \[Warehouse-3: x_{23}\] \[Dummy\hspace{0.2cm}Warehouse: x_{24}\] The number of AEDs produced by plant-C different warehouses as :
+
+\[Warehouse-1: x_{31}\] \[Warehouse-2: x_{32}\] \[Warehouse-3: x_{33}\] \[Dummy\hspace{0.2cm}Warehouse: x_{34}\] Hence, decision variables are - \[x_{11},x_{12},x_{13},x_{14}\\ x_{21},x_{22},x_{23},x_{24}\\ x_{31},x_{32},x_{33},x_{34}\]
+
+The objective function can be represented with sum of production and shipping costs:
+
+\[Min\hspace{0.2cm}Z=420x_{11}+414x_{12}+425x_{13}\\ +312x_{21}+315x_{22}+314x_{23}\\ +510x_{31}+512x_{32}+515x_{33}\]
+
+Following are the constraints for this problem-
+
+Supply constraints:
+
+\[Plant-1:x_{11}+x_{12}+x_{13}+x_{14}\le100\] \[Plant-2:x_{21}+x_{22}+x_{23}+x_{24}\le125\] \[Plant-3:x_{31}+x_{32}+x_{33}+x_{34}\le150\]
+
+Demand constraints:
+
+\[Warehouse-1:x_{11}+x_{21}+x_{31}\ge80\] \[Warehouse-2:x_{12}+x_{22}+x_{32}\ge90\] \[Warehouse-3:x_{13}+x_{23}+x_{33}\ge70\]
+
+Non-negativity of variables:\
+
+[x_{ij}\ge0\hspace{0.2cm}where\hspace{0.2cm}i=1,2,3\hspace{0.2cm}and\hspace{0.2cm}j=1,2,3,4\] 
+
+Now,solving the problem using lptrans command -
+
+#Loading the lpsolve library
+
+
+```{r}
+library(lpSolve)
+
+#Making cost matrix-
+cost.mat=matrix(c(420,414,425,0,
+                  312,315,314,0,
+                  510,512,515,0),nrow = 3,byrow = TRUE)
+#Sign of supply constraints-
+row.signs=rep("<=",3)
+#RHS values of supply constraints-
+row.rhs=c(100,125,150)
+#Sign of demand constraints-
+col.signs=rep(">=",4)
+
+#RHS values of demand constraints-
+col.rhs=c(80,90,70,135)
+
+#Using lptrans command to solve the problem
+optimum=lp.transport(cost.mat,"min",row.signs,row.rhs,col.signs,col.rhs)
+```
+
+
+The value of minimized cost is:
+
+```{r}
+optimum$objval
+```
+
+Solutions of the problem are:
+```{r}
+optimum$solution
+```
+We can observe that plant -1 supplies to warehouse 1 and 2, plant-2 supplies to warehouse 1 and 3 and plant-3 supplies to plant-1 only (rest goes to dummy warehouse).
+
+Number of AEDs to be produced by plant-1:
+```{r}
+optimum$solution[1,1]+optimum$solution[1,2]+optimum$solution[1,3]+optimum$solution[1,4]
+```
+
+Number of AEDs to be produced by plant-2:
+
+```{r}
+optimum$solution[2,1]+optimum$solution[2,2]+optimum$solution[2,3]+optimum$solution[2,4]
+```
+
+Number of AEDs to be produced by plant-3:
+```{r}
+optimum$solution[3,1]+optimum$solution[3,2]+optimum$solution[3,3]
+```
+
+
+Question-2: 
+# Formulate the dual of this transportation problem
+In dual problem, the rhs values of primal constraints become the coefficients of dual objective function and new variables are introduced. Consider, \(y_j\) and \(u_i\) be two classes of constraints, demand and supply constraints. \(y_j\) is what supplier gets on shipping the product and \(u_i\) the cost of production involved. Therefore, the positive part of objective function is the demand part and negative part is the supply part and difference between them gives us the profit. So, dual transportation problem is a profit maximization problem.
+
+Hence, dual objective function is - \[Max\hspace{0.2cm}Z=80y_1+90y_2+70y_3-100u_1-125u_2-150u_3\]
+
+In this problem, we know values of u1, u2 and u3.
+
+u1=400 , u2=300, u3=500
+
+Therefore, new objective function becomes:
+
+\[Z=80y_1+90y_2+70y_3-152500\]
+
+Constraints of dual transportation problem are of format-
+
+\[SP_{j}\ge CP_{i}+ CT_{ij}\hspace{0.4cm}or\hspace{0.4cm}y_j\ge u_i+CT_{ij}\] 
+Where, SP is selling price(Yj), CP is production cost and CT is transportation cost.
+
+Hence, dual constraints are:
+
+Plant-1 delivers to 3 locations-
+
+\[y_1\ge400+20=420 \] \[y_2\ge400+14=414\] \[y_3\ge400+25=425\]
+
+Plant-2 delivers to 3 locations-
+
+\[y_1\ge300+12=312 \] \[y_2\ge300+15=315\] \[y_3\ge300+14=314\]
+
+Plant-3 delivers to 3 locations-
+
+\[y_1\ge500+10=510 \] \[y_2\ge500+12=512\] \[y_3\ge500+15=515\] Non-negativity of decision variables-
+
+\[y_j\ge 0, j=1,2,3\]
+
+
+
+# Question-3:
+Make an economic interpretation of the dual
+Economic interpretation of the problem can be made in following two ways-
+
+1. MR>=MC
+
+Consider our first constraint, \(y_1\ge420\). Here, \(y_1\) is typically the selling price of one unit of product in warehouse-1 . This selling price of one unit or revenue earned on sale of one unit of the product is called Marginal Revenue(MR). Also, 420 (right hand side) is the total cost of production and shipping of unit product, which is also called Marginal Cost(MC).
+
+Henceforth, constraints simply indicate that \(MR\ge MC\).This means that plant-1 can keep on increasing the production of product and it’s shipment to warehouse-1 as long as \(MR\ge 420\). Contrary to that, the supplier could decrease production and shipment to warehouse-1 if the equation would have been \(MR\le420\).However, if \(y_1=420\) ,i.e, \(MR=MC\), the supplier/producer neither increases or decreases production because that’s the optimum situation. This point is called equilibrium for profit maximization. Therefore, transportation cost minimization problem is equivalent to its dual profit maximization and both end on the point \(MR=MC\).
+
+#Above interpretation can be understood by following graph:
+```{r}
+#Making random dataframe to use for graph-
+data <- data.frame(
+  Quantity = c(10, 20, 30, 40, 50),
+  Price = c(5, 4, 3, 2, 1),
+  Supply = c(5, 10, 15, 20, 25),
+  Demand = c(25, 20, 15, 10, 5)
+)
+
+
+```
+
+
+
+In this graph, blue dashed line represents supply and dotted red line represents demand. The intersection of both lines is equilibrium point of profit maximization and cost minimization where MR=MC. The region left to this point has \(MR\ge MC\) and the region right to this point as \(MR\le MC\).
+
+2. Hiring and not hiring shipping companies for goods
+
+If \(y_j\ge u_i+CT_{ij}\) then supplier prefers transporting good by itself. However, if \(yj\le u_i+CT_{ij}\) then supplier would prefer hiring a shipping company which could transport goods in a cheaper way since its own unit transportation cost is higher than its unit revenue. The shipment company would be able to satisfy \(\ge\) instead of \(\le\).
+
+So, if \(y_j\ge u_i+CT_{ij}\) then supplier and shipper are same but if \(y_j\le u_i+CT_{ij}\) then supplier prefers hiring a shipper company to reduce its transportation cost.
