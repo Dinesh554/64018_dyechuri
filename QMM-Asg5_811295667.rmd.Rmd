@@ -1,0 +1,365 @@
+---
+title: "DEA Assignment-5_811295667"
+author: "DINESH YECHURI"
+date: "2023-10-29"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+# Using benchmarking libraries for DEA
+library(Benchmarking)
+if (!require(knitr)) {
+library(knitr)
+}
+```
+
+
+```{r}
+#Create data frame with the provided data
+data <- data.frame(
+  DMU = c("Facility 1", "Facility 2", "Facility 3", "Facility 4", "Facility 5", "Facility 6"),
+  Staff_hours_per_day = c(100, 300, 320, 500, 350, 340),
+  Supplies_per_day = c(0.3, 0.6, 1.2, 2, 1.4,0.7),
+  Reimbursed_patient_days = c(15000,15000,40000,28000,20000,14000),
+  Privately_paid_patient_days = c(3500,20000,11000,42000,25000,15000)
+)
+```
+
+
+```{r}
+#Extracting the only one colume of the DMU
+dmu<- data[1:1]
+dmu
+```
+
+
+```{r}
+#Print the data into table format 
+kable(data, format = "pandoc", caption = "Hope Valley Health Care Association")
+```
+
+
+```{r}
+#Input format
+input <- matrix(c(100, 300, 320, 500, 350, 340,0.3, 0.6, 1.2, 2, 1.4,0.7),ncol=2)
+output <- matrix(c(15000,15000,40000,28000,20000,14000,3500,20000,11000,42000,25000,15000),ncol=2)
+
+colnames(input) <- c("Staff_hours_per_day", "Supplies_per_day")
+colnames(output) <-c("Reimbursed_patient_days", "Privately_paid_patient_days")
+
+input
+output
+
+```
+***. DEA Analysis using FDH***
+```{r}
+#DEA input or output efficiency measures, peers, lambdas and slacks
+dea(input,output,RTS="FDH")
+```
+
+
+```{r}
+FDH<-dea(input,output,RTS = "FDH")
+FDH
+```
+
+
+```{r}
+#Show the list of objects calculated
+str(FDH)
+```
+
+
+```{r}
+#identify the  Efficient value
+eff(FDH)
+```
+
+
+```{r}
+#Identify the peers value
+
+peers(FDH)
+```
+
+
+```{r}
+#Identify the Lambda value
+lambda(FDH)
+```
+
+```{r}
+#Add the Efficiency, Peers & Lambda values in the table
+P_FDH <- cbind(data, FDH$eff, FDH$lambda, FDH$peers)
+colnames(P_FDH)<- c(names(data),names(input), names(output),
+                    'Efficiency','Lambda1','Lambda2','Lambda3',
+                    'Lambda4','Lambda5','Lambda6','Peers')
+#Showa the table
+P_FDH
+```
+
+
+```{r}
+#plot the graph for FDH Assumption
+dea.plot(input,output,RTS="FDH",txt = rownames(P_FDH),xlab = 'input',ylab = 'output')
+##dea.plot(input,output,RTS="fdh",ORIENTATION="in-out",txt=rownames(P_FDH),xlab = 'input',ylab = 'output')
+```
+
+***. DEA Analysis using CRS***
+```{r}
+#DEA input or output efficiency measures, peers, lambdas and slacks
+dea(input,output,RTS="CRS")
+CRS<-dea(input,output,RTS = "CRS")
+CRS
+```
+
+```{r}
+#Show the list of objects calculated
+str(CRS)
+```
+
+```{r}
+# CRS : Identifing the Efficiency values
+eff(CRS)
+```
+
+```{r}
+#Identifying the Peers values
+peers(CRS)
+```
+
+```{r}
+#Identifying the Lambda values
+lambda(CRS)
+```
+
+```{r}
+#Add the Efficiency, Peers & Lambda values in the table
+P_CRS <- cbind(data,CRS$eff, CRS$lambda)
+#Name the columns of the table
+colnames(P_CRS)<- c(names(data),names(input), names(output),
+                    'Efficiency','Lambda1','Lambda2','Lambda3',
+                    'Lambda4','Lambda5','Lambda6')
+#Sow the table
+P_CRS
+#plot the graph for CRS Assumption
+dea.plot(input,output,RTS="CRS",txt = rownames(P_CRS))
+```
+
+***. DEA Analysis using VRS***
+```{r}
+#DEA input or output efficiency measures, peers, lambdas and slacks
+dea(input,output,RTS="VRS")
+VRS<-dea(input,output,RTS = "VRS")
+VRS
+```
+
+```{r}
+#Show the list of objects calculated
+str(VRS)
+```
+
+```{r}
+#identifying the efficienty values
+eff(VRS)
+```
+
+```{r}
+#identifying the peers
+peers(VRS)
+```
+
+```{r}
+#identifying the lambda
+lambda(VRS)
+```
+
+```{r}
+#Add the Efficiency, Peers & Lambda values in the table
+P_VRS <- cbind(data, VRS$eff, VRS$lambda)
+#Name the columns of the table
+colnames(P_VRS)<- c(names(data),names(input), names(output),'Efficiency','Lambda1','Lambda2','Lambda3','Lambda4','Lambda5','Lambda6')
+#Sow the table
+P_VRS
+#plot the graph for CRS Assumption
+dea.plot(input,output,RTS="VRS",txt = rownames(P_VRS))
+dea.plot(input,output,RTS="VRS",ORIENTATION="in-out",txt=rownames(P_VRS))
+```
+
+
+***. DEA Analysis using IRS***
+```{r}
+#DEA input or output efficiency measures, peers, lambdas and slacks
+dea(input,output,RTS="IRS")
+IRS<-dea(input,output,RTS = "IRS")
+IRS
+```
+
+```{r}
+#Show the list of objects calculated
+str(IRS)
+```
+
+```{r}
+#identifying the efficency values
+eff(IRS)
+```
+
+```{r}
+#Identifying the peers
+peers(IRS)
+```
+
+```{r}
+#Identifying the lambda
+lambda(IRS)
+```
+
+```{r}
+#Add the Efficiency, Peers & Lambda values in the table
+P_IRS <- cbind(data, IRS$eff, IRS$lambda)
+#Name the columns of the table
+colnames(P_IRS)<- c(names(data),names(input), names(output),
+                    'Efficiency','Lambda1','Lambda2','Lambda3',
+                    'Lambda4','Lambda5','Lambda6')
+#Sow the table
+P_IRS
+#plot the graph for the CRS Assumption
+dea.plot(input,output,RTS="IRS",txt = rownames(P_IRS))
+dea.plot(input,output,RTS="irs",ORIENTATION="in-out",txt=rownames(P_IRS))
+```
+
+***. DEA Analysis using the DRS***
+```{r}
+#DEA input or output efficiency measures, peers, lambdas and slacks
+dea(input,output,RTS="DRS")
+
+DRS<-dea(input,output,RTS = "DRS")
+DRS
+```
+
+```{r}
+#Show the list of objects calculated
+str(DRS)
+```
+
+```{r}
+#Identifying the Efficiency value
+eff(DRS)
+```
+
+```{r}
+#Identifying the peers
+peers(DRS)
+```
+
+```{r}
+#Identifying the lambda
+lambda(DRS)
+```
+
+```{r}
+#Add the Efficiency, Peers & Lambda values in the table
+P_DRS <- cbind(data, DRS$eff, DRS$lambda)
+#Name the columns of the table
+colnames(P_DRS)<- c(names(data),names(input), names(output),
+                    'Efficiency','Lambda1','Lambda2','Lambda3',
+                    'Lambda4','Lambda5','Lambda6')
+#Sow the table
+P_DRS
+#plot the graph for CRS Assumption
+dea.plot(input,output,RTS="DRS",txt = rownames(P_DRS))
+dea.plot(input,output,RTS="Drs",ORIENTATION="in-out",txt=rownames(P_DRS))
+```
+
+***. DEA Analysis using FRH***
+```{r}
+#DEA input or output efficiency measures, peers, lambdas and slacks
+dea(input,output,RTS="ADD")
+FRH<-dea(input,output,RTS = "ADD")
+FRH
+```
+
+```{r}
+#Show the list of objects calculated
+str(FRH)
+```
+
+```{r}
+#Idendtying the Efficiency values
+eff(FRH)
+```
+
+```{r}
+#Identifying the peers
+peers(FRH)
+```
+
+```{r}
+#Identifying the lambda
+lambda(FRH)
+```
+
+```{r}
+#Add the Efficiency, Peers & Lambda values in the table
+P_FRH <- cbind(data, FRH$eff, FRH$lambda)
+#Name the columns of the table
+colnames(P_FRH)<- c(names(data),names(input), names(output),
+                    'Efficiency','Lambda1','Lambda2','Lambda3',
+                    'Lambda4','Lambda5','Lambda6')
+#Sow the table
+P_FRH
+#plot the graph for CRS Assumption
+dea.plot(input,output,RTS="ADD",txt = rownames(P_FRH))
+dea.plot(input,output,RTS="ADD",ORIENTATION="in-out",txt=rownames(P_FRH))
+
+```
+
+## Compare and Contrast the above Results
+```{r}
+#Add the Efficiency of all the DMUs for all the Assumptions in a table
+EfficiencyReport <- cbind(data[,1],FDH$eff,CRS$eff,VRS$eff,IRS$eff,DRS$eff,FRH$eff)
+#Name the columns of the table
+colnames(EfficiencyReport) <- c(names(dmu),'FDH Efficiency',
+                                'CRS Efficiency','VRS Efficiency','IRS Efficiency',
+                                'DRS Efficiency','FRH Efficiency')
+#Show the Efficiency table
+EfficiencyReport
+#Let's compare the Efficiency of all the DMUs for all the assumptions using a plot
+#Concatenate the Efficiency
+spreadsheet <- cbind(FDH$eff,CRS$eff,VRS$eff,IRS$eff,DRS$eff,FRH$eff) 
+#Name the rows
+rownames(spreadsheet) <- c("Facility1","Facility2","Facility3","Facility4",
+                           "Facility5","Facility6")
+#Name the columns
+colnames(spreadsheet) <- c ("FDH","CRS","VRS","IRS","DRS","FRH")
+#See the result
+spreadsheet
+#plot the graph
+barplot(t(spreadsheet),col=gray.colors(6),xlab = "DMUs", ylab="Efficiency",beside=TRUE)
+```
+
+
+Hence,we can conclude that
+
+1) Facility 1 is fully efficient for all the assumptions.
+
+2) Facility 2 is fully efficient for all the assumptions.
+
+3) Facility 3 is fully efficient for FDH, VRS, DRS and FRH assumptions. For assumptions IRS and CRS, it is 87.9% efficient.
+
+4) Facility 4 is fully efficient for all the assumptions.
+
+5) Facility 5 is fully efficient for FDH and FRH assumptions. For assumptions and CRS and DRS it is 89.4% efficient. For VRS and IRS assumption it is 92.3% efficient.
+
+6) Facility 6  FDH and FRH assumptions, it is 88.2% efficient. For CRS and dRS assumptions, it is 70.4% efficient. For VRS and IRS Assumption it is 72.7% efficient.
+
