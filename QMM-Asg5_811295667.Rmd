@@ -1,0 +1,149 @@
+---
+title: "QMM_ASG-9_811295667"
+author: "Dinesh Yechuri"
+date: "2023-11-05"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Problem Statement:
+
+**The Research and Development Division of the Emax Corporation has developed three new products. A decision now needs to be made on which mix of these products should be produced.Management wants primary consideration given to three factors: total profit, stability in the workforce, and achieving an increase in the company’s earnings next year from the $60 million achieved this year. In particular, using the units given in the following table, they want to Maximize Z = P - 5C - 2D, where P = total (discounted) profit over the life of the new products, C = change (in either direction) in the current level of employment, D = decrease (if any) in next year’s earnings from the current year’s level. The amount of any increase in earnings does not enter into Z, because management is concerned primarily with just achieving some increase to keep the stockholders happy. (It has mixed feelings about a large increase that then would be difficult to surpass in subsequent years).The impact of each of the new products (per unit rate of production) on each of these factors is shown in the following table:**
+
+This problem can be expressed in the table as:
+
+
+
+```{r}
+library(knitr)
+library(kableExtra)
+```
+
+```{r}
+emax.df= data.frame(Factor=c("Total Profit","Employement level","Earning next year"),
+               A=c(15,8,6),
+               B=c(12,6,5),
+               C=c(20,5,4),
+               Goal=c("Maximize","=70",">=60"),
+               Units=c("Millions of dollars",'Hundereds of workers','Million of dollars'),
+               Penalties = c("  ",'(+)5,(-)5',-2)
+               )
+emax.df %>% 
+  kable(align = "c") %>% 
+  kable_classic() %>% 
+  add_header_above(header = c("  "=1,"Product"=3,"  "=3)) %>% 
+  add_header_above(header = c(" "=1,"Unit contribution"=3," "=3)) %>% 
+  column_spec(1,border_right = TRUE) %>% 
+  column_spec(4,border_right = TRUE) %>% 
+  column_spec(5,border_right = TRUE) %>% 
+  column_spec(6,border_right = TRUE) 
+
+```
+
+
+**Q-1: Define y1+ and y1-, respectively, as the amount over (if any) and the amount under (if any) the employment level goal. Define y2+ and y2- in the same way for the goal regarding earnings next year. Define x1, x2, and x3 as the production rates of Products 1, 2, and 3, respectively. With these definitions, use the goal programming technique to express y1+, y1- , y2+ and y2- algebraically in terms of x1, x2, and x3. Also, express P in terms of x1, x2, and x3.**
+
+For the factor "Employment level," the penalty is bi-directional because the direction of constraint is "=," indicating that the company does not wish to fall below or over 70.The penalty for earning less the following year, however, is one-way and detrimental because the business does not want to go below 60.
+
+The table's value of P has the following mathematical representation:
+
+
+$$P=15x_{1}+12x_{2}+20x_{3}$$
+
+Constraints:
+
+$$Employment \ Level:8x_{1}+6x_{2}+5x_{3}=70$$
+
+$$Earning \ next \ year:6x_{1}+5x_{2}+4x_{3}≥60$$
+
+Writing equations in deviation form:$yi=y_{i}^++y_{i}^-$
+
+$$Employment \ Level:(y^{+}_{1}−y^{-}_{1})=8x_{1}+6x_{2}+5x_{3}=70$$
+
+$$=>8x_{1}+6x_{2}+5x_{3}−(y^{+}_{1}−y^{-}_{1})=70$$
+
+$$Earning \ next \ year:(y^{+}_{2}−y^{-}_{2})=6x_{1}+5x_{2}+4x_{3}=60$$
+$$=>6x_{1}+5x_{2}+4x_{3}−(y^{+}_{2}−y^{-}_{2})=60$$
+where,
+
+
+$y^{+}_{1}$ is a positive deviation or over achievement of total profit.
+
+$y^{-}_{1}$ is a negative deviation or under achievement of total profit.
+
+
+$y^{+}_{2}$ is a positive deviation or over achievement of earning next year.
+
+
+$y^{-}_{2}$ is a negative deviation or under achievement of earning next year.
+
+**Non-negativity of constraints:**
+
+$$x_{1}≥0,x_{2}≥0,x_{3}≥0,y_{1}^+≥0,y_{1}^-≥0,y_{2}^+≥0,y_{2}^-≥0$$
+
+**2. Express management’s objective function in terms of x1, x2, x3, y1+, y1-, y2+ and y2-**
+
+Objective functions is given as :
+
+ $$MaxZ=P−5C−2D−−−−−(1)$$
+Putting values of P,C and D in in (1) :
+
+$$MaxZ=15x_{1}+12x_{2}+20x_{3}−5(y^{+}_{1}+y^{-}_{1})−2(y^{-}_{2})$$
+
+$$=>MaxZ=15x_{1}+12x_{2}+20x_{3}−5y^{+}_{1}−5y^{-}_{1}−0y^{+}_{2}−2y^{-}_{2}$$
+
+**3.Formulate and solve the linear programming model. What are your findings?**
+
+Creating code in R to address the problem:
+
+```{r}
+library(lpSolve)
+library(lpSolveAPI)
+```
+
+```{r}
+lp=make.lp(2,7)
+set.objfn(lp,c(15,12,20,-5,-5,0,-2))
+lp.control(lp,sense="max")
+```
+
+
+```{r}
+set.row(lp,1,c(8,6,5,-1,1,0,0),indices = c(1,2,3,4,5,6,7))
+set.row(lp,2,c(6,5,4,0,0,-1,1),indices = c(1,2,3,4,5,6,7))
+set.rhs(lp,c(70,60))
+set.constr.type(lp,c("=","="))
+set.bounds(lp,lower = rep(0,7))
+lp.rownames=c("Total Profit","Employement Level","Earning next year")
+lp.colnames=c("x1","x2","x3","y1p","y1m","y2p")
+solve(lp)
+```
+Therefore, the value of the optimized objective function is:
+
+```{r}
+get.objective(lp)
+```
+For the optimal objective function, the decision variable values are:
+
+```{r}
+get.variables(lp)
+```
+
+The following are the conclusions I reached after working on this topic: -The objective function and constraints provided allowed for the successful solution of the LP problem. For the LP problem, 275 is the optimal objective value.
+The following are the decision variables' values at the optimal solution:
+
+$$x_{1}=0$$
+$$x_{2}=0$$
+$$x_{3}=15$$
+$$y_{1}^+=5$$
+$$y_{1}^−=0$$
+$$y_{2}^+=0$$
+$$y_{2}^-=0$$
+
+These results indicate an optimal solution to the goal programming problem. The values of the decision variables provide information about the suggested values of employment levels, earnings for the next year, and deviations from the goals for each element when taking into account the set limits and penalties. This method's objective was to maximize the target deviations while accounting for the associated penalties.
+
+
+Only $y_{1}^+$ seems to have a value that is not zero. Thus, the only measure that deviates positively from the goals is employment level. Its corresponding penalty can be computed as 5∗5=25. Since the other variables don't exhibit any deviation, the penalties related to them are zero.
